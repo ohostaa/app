@@ -68,7 +68,7 @@ function validateConfig() {
   if (process.env.LINE_PRIVATE_KEY && !process.env.LINE_PRIVATE_KEY.includes("BEGIN PRIVATE KEY")) {
     console.error("❌ LINE_PRIVATE_KEY の形式が正しくありません");
     console.error("🔧 -----BEGIN PRIVATE KEY----- で始まる形式で設定してください");
-    console.error("${process.env.LINE_PRIVATE_KEY}");
+    console.error(`現在の値: ${process.env.LINE_PRIVATE_KEY}`); // ← ここを修正
     process.exit(1);
   }
 

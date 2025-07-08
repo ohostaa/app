@@ -1,5 +1,5 @@
-import express from "express";
-import { Client, GatewayIntentBits, EmbedBuilder } from "discord.js";
+import pkg from 'discord.js';
+const { Client, GatewayIntentBits, EmbedBuilder } = pkg;
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
@@ -8,6 +8,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { config as dotenvConfig } from "dotenv";
+
 
 // Load environment variables
 dotenvConfig();

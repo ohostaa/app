@@ -1,6 +1,5 @@
 import express from "express";
 import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
-const { Client, GatewayIntentBits, EmbedBuilder } = pkg;
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';

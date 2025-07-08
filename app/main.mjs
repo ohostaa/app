@@ -10,20 +10,19 @@ import fs from "fs";
 import path from "path";
 import { config as dotenvConfig } from "dotenv";
 
-
 // Load environment variables
 dotenvConfig();
 
 const app = express();
 app.use(express.raw({ type: 'application/json' }));
 
-// 環境変数から設定を読み込み
+// 環境変数から設定を読み込み（Koyeb Secrets対応）
 const config = {
   line: {
     channelId: process.env.LINE_CHANNEL_ID,
     channelSecret: process.env.LINE_CHANNEL_SECRET,
     kid: process.env.LINE_KID,
-    privateKey: process.env.LINE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    privateKey: process.env.LINE_PRIVATE_KEY ? process.env.LINE_PRIVATE_KEY.replace(/\\n/g, "\n") : "",
   },
   discord: {
     token: process.env.DISCORD_TOKEN,
@@ -43,7 +42,7 @@ const config = {
   }
 };
 
-// 設定値の検証
+// 設定値の検証（Koyeb Secrets対応版）
 function validateConfig() {
   const required = [
     "LINE_CHANNEL_ID",
@@ -59,16 +58,27 @@ function validateConfig() {
 
   if (missing.length > 0) {
     console.error("❌ 必要な環境変数が設定されていません:", missing.join(", "));
+    console.error("🔧 Koyebの Environment variables で以下を設定してください:");
+    console.error("💡 機密情報はSecretsを使用し、{{ secret.SECRET_NAME }}で参照してください");
+    missing.forEach(key => console.error(`   - ${key}`));
+    process.exit(1);
+  }
+
+  // LINE_PRIVATE_KEYの形式チェック
+  if (process.env.LINE_PRIVATE_KEY && !process.env.LINE_PRIVATE_KEY.includes("BEGIN PRIVATE KEY")) {
+    console.error("❌ LINE_PRIVATE_KEY の形式が正しくありません");
+    console.error("🔧 -----BEGIN PRIVATE KEY----- で始まる形式で設定してください");
     process.exit(1);
   }
 
   // 暗号化キーの警告
   if (!process.env.ENCRYPTION_KEY) {
     console.warn("⚠️ ENCRYPTION_KEY が設定されていません。自動生成されたキーを使用します。");
-    console.warn("⚠️ 本番環境では必ず固定のENCRYPTION_KEYを設定してください。");
+    console.warn("⚠️ 本番環境では必ずKoyeb Secretsで固定のENCRYPTION_KEYを設定してください。");
   }
 
   console.log("✅ 環境変数の設定確認完了");
+  console.log("🔒 Koyeb Secretsを使用した機密情報の管理が推奨されます");
 }
 
 validateConfig();
@@ -634,6 +644,13 @@ app.get("/", (req, res) => {
     security: {
       encryptionAlgorithm: config.encryption.algorithm,
       encryptionKeySet: !!config.encryption.key
+    },
+    koyeb: {
+      publicDomain: process.env.KOYEB_PUBLIC_DOMAIN || "not available",
+      appName: process.env.KOYEB_APP_NAME || "not available",
+      serviceName: process.env.KOYEB_SERVICE_NAME || "not available",
+      gitSha: process.env.KOYEB_GIT_SHA || "not available",
+      gitBranch: process.env.KOYEB_GIT_BRANCH || "not available"
     }
   });
 });
@@ -664,9 +681,44 @@ app.get("/config", (req, res) => {
     security: {
       encryptionAlgorithm: config.encryption.algorithm,
       encryptionKeySet: !!process.env.ENCRYPTION_KEY
+    },
+    koyeb: {
+      secretsUsed: [
+        "LINE_CHANNEL_SECRET",
+        "LINE_KID", 
+        "LINE_PRIVATE_KEY",
+        "DISCORD_TOKEN",
+        "DISCORD_WEBHOOK_URL",
+        "ENCRYPTION_KEY"
+      ],
+      environmentVariables: [
+        "LINE_CHANNEL_ID",
+        "DISCORD_SYNC_CHANNEL_ID",
+        "BROADCAST_MIN_INTERVAL",
+        "BROADCAST_ENABLED",
+        "PORT"
+      ]
     }
   });
 });
+
+// スラッシュコマンド定義（管理者用）
+const commands = [
+  new SlashCommandBuilder()
+    .setName("line-status")
+    .setDescription("LINE連携の状態確認"),
+  new SlashCommandBuilder()
+    .setName("nick-list")
+    .setDescription("設定済みニックネーム一覧（暗号化済み）"),
+  new SlashCommandBuilder()
+    .setName("nick-reset")
+    .setDescription("指定ユーザーのニックネームをリセット")
+    .addStringOption(option =>
+      option.setName("user_id")
+        .setDescription("リセットするユーザーのID")
+        .setRequired(true)
+    ),
+];
 
 // Discord Bot Ready イベント
 client.on("ready", async () => {
@@ -676,10 +728,21 @@ client.on("ready", async () => {
   console.log(`📡 ブロードキャスト: ${config.broadcast.enabled ? '有効' : '無効'}`);
   console.log(`👤 ニックネーム機能: 必須 (${userNicknames.size}人設定済み)`);
   console.log(`🔒 暗号化: ${config.encryption.algorithm} (キー設定: ${!!process.env.ENCRYPTION_KEY ? '✅' : '⚠️自動生成'})`);
+  console.log(`🚀 Koyeb環境: ${process.env.KOYEB_APP_NAME || 'ローカル'}`);
 
   await getLineAccessToken();
 
-  console.log("🔄 Discord ⇄ LINE連携システム（ニックネーム必須・暗号化版）稼働中");
+  const rest = new REST({ version: "9" }).setToken(config.discord.token);
+  try {
+    await rest.put(Routes.applicationCommands(client.user.id), {
+      body: commands.map((cmd) => cmd.toJSON()),
+    });
+    console.log("✅ スラッシュコマンド登録完了");
+  } catch (error) {
+    console.error("❌ スラッシュコマンド登録エラー:", error);
+  }
+
+  console.log("🔄 Discord ⇄ LINE連携システム（ニックネーム必須・暗号化・Koyeb対応版）稼働中");
 });
 
 // Discord → LINE全友だち メッセージ転送（制限付き）
@@ -714,18 +777,23 @@ client.on("messageCreate", async (message) => {
   }
 });
 
+// スラッシュコマンド処理（管理者
+
 client.login(config.discord.token);
 
 app.listen(config.server.port, () => {
   console.log(`🚀 Server running on port ${config.server.port}`);
+  console.log(`📡 Webhook URL: ${process.env.KOYEB_PUBLIC_DOMAIN ? `https://${process.env.KOYEB_PUBLIC_DOMAIN}/line-webhook` : `http://localhost:${config.server.port}/line-webhook`}`);
+  console.log(`🔧 Config URL: ${process.env.KOYEB_PUBLIC_DOMAIN ? `https://${process.env.KOYEB_PUBLIC_DOMAIN}/config` : `http://localhost:${config.server.port}/config`}`);
   console.log(`👤 ニックネーム機能: 必須（初回メッセージで設定案内）`);
-  console.log(`🔒 暗号化: AES-256-GCM (${!!process.env.ENCRYPTION_KEY ? '環境変数設定済み' : '自動生成キー'})`);
+  console.log(`🔒 暗号化: AES-256-GCM (${!!process.env.ENCRYPTION_KEY ? 'Koyeb Secrets設定済み' : '自動生成キー'})`);
   console.log(`📁 ファイル自動作成: 有効`);
-  console.log(`⚠️  上記URLをLINE Developersコンソールに設定してください`);
+  console.log(`🚀 Koyeb環境: ${process.env.KOYEB_APP_NAME || 'ローカル'}`);
+  console.log(`⚠️  上記Webhook URLをLINE Developersコンソールに設定してください`);
   
   if (!process.env.ENCRYPTION_KEY) {
     console.log(`🔑 自動生成された暗号化キー: ${config.encryption.key}`);
-    console.log(`⚠️  本番環境では環境変数 ENCRYPTION_KEY を設定してください`);
+    console.log(`⚠️  本番環境ではKoyeb Secretsで ENCRYPTION_KEY を設定してください`);
   }
 });
 

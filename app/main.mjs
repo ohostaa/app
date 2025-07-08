@@ -1,3 +1,4 @@
+import express from "express";
 import pkg from 'discord.js';
 const { Client, GatewayIntentBits, EmbedBuilder } = pkg;
 import { SlashCommandBuilder } from '@discordjs/builders';

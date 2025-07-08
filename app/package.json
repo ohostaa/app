@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "革新的なナビゲーションサービス - Juju-navi",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node main.js",
-    "dev": "nodemon main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node main.mjs",
+    "dev": "nodemon main.mjs"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "navigation",
@@ -27,10 +27,5 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ohostaa/app.git"
-  },
-  "homepage": "https://juju-navi.koyeb.app"
+  }
 }

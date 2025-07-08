@@ -62,6 +62,42 @@ function validateConfig() {
     }
   });
 
+  const missing = required.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    console.error("❌ 必要な環境変数が設定されていません:", missing.join(", "));
+    console.error("🔧 Koyebの Environment variables で以下を設定してください:");
+    console.error("💡 機密情報はSecretsを使用し、{{ secret.SECRET_NAME }}で参照してください");
+    missing.forEach(key => console.error(`   - ${key}`));
+    process.exit(1);
+  }
+
+  // LINE_PRIVATE_KEYの形式チェック
+  if (process.env.LINE_PRIVATE_KEY && !process.env.LINE_PRIVATE_KEY.includes("BEGIN PRIVATE KEY")) {
+    console.error("❌ LINE_PRIVATE_KEY の形式が正しくありません");
+    console.error("🔧 -----BEGIN PRIVATE KEY----- で始まる形式で設定してください");
+    console.error(`現在の値の最初の50文字: ${process.env.LINE_PRIVATE_KEY.substring(0, 50)}...`);
+    process.exit(1);
+  }
+
+  // ハードコードされた値の確認
+  console.log("🔧 ハードコードされた設定値:");
+  console.log(`📱 LINE Channel ID: ${config.line.channelId}`);
+  console.log(`💬 Discord Sync Channel ID: ${config.discord.syncChannelId}`);
+  console.log(`🚀 Server Port: ${config.server.port}`);
+  console.log(`📡 Broadcast Interval: ${config.broadcast.minInterval}ms`);
+  console.log(`✅ Broadcast Enabled: ${config.broadcast.enabled}`);
+
+  // 暗号化キーの警告
+  if (!process.env.ENCRYPTION_KEY) {
+    console.warn("⚠️ ENCRYPTION_KEY が設定されていません。自動生成されたキーを使用します。");
+    console.warn("⚠️ 本番環境では必ずKoyeb Secretsで固定のENCRYPTION_KEYを設定してください。");
+  }
+
+  console.log("✅ 環境変数の設定確認完了");
+  console.log("🔒 Koyeb Secretsを使用した機密情報の管理が推奨されます");
+}
+
 validateConfig();
 
 // Discord クライアント初期化（v14対応）

@@ -1,15 +1,23 @@
-const path = require("path");
-const fastify = require("fastify")({
+import path from "path";
+import { fileURLToPath } from "url";
+import fastify from "fastify";
+
+// ES Moduleで__dirnameを取得する方法
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Fastifyインスタンスの作成
+const app = fastify({
   logger: false,
 });
 
 // 静的ファイル設定
-fastify.register(require("@fastify/static"), {
+await app.register((await import("@fastify/static")).default, {
   root: path.join(__dirname, "public"),
   prefix: "/",
 });
 
-fastify.register(require("@fastify/formbody"));
+await app.register((await import("@fastify/formbody")).default);
 
 // メインのHTMLテンプレート関数
 function getMainHTML(content, title = "Juju-navi") {
@@ -231,7 +239,7 @@ function getMainHTML(content, title = "Juju-navi") {
 }
 
 // ホームページ
-fastify.get("/", function (request, reply) {
+app.get("/", async function (request, reply) {
   const content = `
     <div class="hero">
         <div class="container">
@@ -267,11 +275,11 @@ fastify.get("/", function (request, reply) {
     </div>
   `;
   
-  reply.type('text/html').send(getMainHTML(content, "Juju-navi - ホーム"));
+  return reply.type('text/html').send(getMainHTML(content, "Juju-navi - ホーム"));
 });
 
 // 会社概要ページ
-fastify.get("/about", function (request, reply) {
+app.get("/about", async function (request, reply) {
   const content = `
     <div class="container">
         <div class="card">
@@ -295,11 +303,11 @@ fastify.get("/about", function (request, reply) {
     </div>
   `;
   
-  reply.type('text/html').send(getMainHTML(content, "会社概要 - Juju-navi"));
+  return reply.type('text/html').send(getMainHTML(content, "会社概要 - Juju-navi"));
 });
 
 // サービスページ
-fastify.get("/services", function (request, reply) {
+app.get("/services", async function (request, reply) {
   const content = `
     <div class="container">
         <div class="card">
@@ -342,11 +350,11 @@ fastify.get("/services", function (request, reply) {
     </div>
   `;
   
-  reply.type('text/html').send(getMainHTML(content, "サービス - Juju-navi"));
+  return reply.type('text/html').send(getMainHTML(content, "サービス - Juju-navi"));
 });
 
 // お問い合わせページ
-fastify.get("/contact", function (request, reply) {
+app.get("/contact", async function (request, reply) {
   const content = `
     <div class="container">
         <div class="card">
@@ -387,11 +395,11 @@ fastify.get("/contact", function (request, reply) {
     </div>
   `;
   
-  reply.type('text/html').send(getMainHTML(content, "お問い合わせ - Juju-navi"));
+  return reply.type('text/html').send(getMainHTML(content, "お問い合わせ - Juju-navi"));
 });
 
 // お問い合わせフォーム送信処理
-fastify.post("/contact", function (request, reply) {
+app.post("/contact", async function (request, reply) {
   const { name, email, subject, message } = request.body;
   
   // ここで実際のメール送信処理を行う（今回は省略）
@@ -415,17 +423,21 @@ fastify.post("/contact", function (request, reply) {
     </div>
   `;
   
-  reply.type('text/html').send(getMainHTML(content, "送信完了 - Juju-navi"));
+  return reply.type('text/html').send(getMainHTML(content, "送信完了 - Juju-navi"));
 });
 
 // サーバー起動
-fastify.listen(
-  { port: process.env.PORT || 3000, host: "0.0.0.0" },
-  function (err, address) {
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    }
-    console.log(`Juju-naviサーバーが起動しました: ${address}`);
+const start = async () => {
+  try {
+    await app.listen({ 
+      port: process.env.PORT || 3000, 
+      host: "0.0.0.0" 
+    });
+    console.log(`Juju-naviサーバーが起動しました: http://0.0.0.0:${process.env.PORT || 3000}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
   }
-);
+};
+
+start();

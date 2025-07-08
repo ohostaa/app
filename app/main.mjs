@@ -16,10 +16,9 @@ dotenvConfig();
 const app = express();
 app.use(express.raw({ type: 'application/json' }));
 
-// 環境変数から設定を読み込み（Koyeb Secrets対応）
 const config = {
   line: {
-    channelId: process.env.LINE_CHANNEL_ID,
+    channelId: "2007706133", // ← ここに実際のLINE Channel IDを記載
     channelSecret: process.env.LINE_CHANNEL_SECRET,
     kid: process.env.LINE_KID,
     privateKey: process.env.LINE_PRIVATE_KEY ? process.env.LINE_PRIVATE_KEY.replace(/\\n/g, "\n") : "",
@@ -27,14 +26,14 @@ const config = {
   discord: {
     token: process.env.DISCORD_TOKEN,
     webhookUrl: process.env.DISCORD_WEBHOOK_URL,
-    syncChannelId: process.env.DISCORD_SYNC_CHANNEL_ID,
+    syncChannelId: "1391688264636694568", // ← ここに実際のDiscord Channel IDを記載
   },
   server: {
-    port: process.env.PORT || 3000,
+    port: 3000, // ← ハードコード
   },
   broadcast: {
-    minInterval: parseInt(process.env.BROADCAST_MIN_INTERVAL) || 60000,
-    enabled: process.env.BROADCAST_ENABLED !== 'false',
+    minInterval: 60000, // ← ハードコード
+    enabled: true, // ← ハードコード
   },
   encryption: {
     key: process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'),
@@ -42,45 +41,26 @@ const config = {
   }
 };
 
-// 設定値の検証（Koyeb Secrets対応版）
+// 設定値の検証（必要な環境変数のみチェック）
 function validateConfig() {
   const required = [
-    "LINE_CHANNEL_ID",
     "LINE_CHANNEL_SECRET",
     "LINE_KID",
     "LINE_PRIVATE_KEY",
     "DISCORD_TOKEN",
     "DISCORD_WEBHOOK_URL",
-    "DISCORD_SYNC_CHANNEL_ID",
   ];
 
-  const missing = required.filter((key) => !process.env[key]);
-
-  if (missing.length > 0) {
-    console.error("❌ 必要な環境変数が設定されていません:", missing.join(", "));
-    console.error("🔧 Koyebの Environment variables で以下を設定してください:");
-    console.error("💡 機密情報はSecretsを使用し、{{ secret.SECRET_NAME }}で参照してください");
-    missing.forEach(key => console.error(`   - ${key}`));
-    process.exit(1);
-  }
-
-  // LINE_PRIVATE_KEYの形式チェック
-  if (process.env.LINE_PRIVATE_KEY && !process.env.LINE_PRIVATE_KEY.includes("BEGIN PRIVATE KEY")) {
-    console.error("❌ LINE_PRIVATE_KEY の形式が正しくありません");
-    console.error("🔧 -----BEGIN PRIVATE KEY----- で始まる形式で設定してください");
-    console.error(`現在の値: ${process.env.LINE_PRIVATE_KEY}`); // ← ここを修正
-    process.exit(1);
-  }
-
-  // 暗号化キーの警告
-  if (!process.env.ENCRYPTION_KEY) {
-    console.warn("⚠️ ENCRYPTION_KEY が設定されていません。自動生成されたキーを使用します。");
-    console.warn("⚠️ 本番環境では必ずKoyeb Secretsで固定のENCRYPTION_KEYを設定してください。");
-  }
-
-  console.log("✅ 環境変数の設定確認完了");
-  console.log("🔒 Koyeb Secretsを使用した機密情報の管理が推奨されます");
-}
+  // デバッグ情報の表示
+  console.log("🔍 環境変数デバッグ情報:");
+  required.forEach(key => {
+    const value = process.env[key];
+    if (value) {
+      console.log(`✅ ${key}: 設定済み (${value.length}文字)`);
+    } else {
+      console.log(`❌ ${key}: 未設定`);
+    }
+  });
 
 validateConfig();
 

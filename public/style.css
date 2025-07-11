@@ -1,52 +1,151 @@
 body {
   margin: 0;
-  font-family: 'Noto Sans JP', 'Roboto', sans-serif;
-  background: url('/images/nebula-bg.jpg') no-repeat center center fixed;
-  background-size: cover;
+  font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
   color: #fff;
+  min-height: 100vh;
 }
+
+header.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 2rem;
+  background: rgba(20, 20, 40, 0.95);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+.logo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+nav a {
+  color: #fff;
+  margin-left: 1.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+nav a:hover {
+  color: #3CDB2E;
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
 .hero {
   text-align: center;
-  padding: 5rem 1rem 2rem 1rem;
-  background: rgba(0,0,0,0.6);
+  padding: 4rem 1rem 2rem 1rem;
+  background: rgba(0,0,0,0.25);
+  border-radius: 1.2rem;
+  margin-bottom: 2rem;
+}
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  font-family: 'Montserrat', sans-serif;
+}
+.subtitle {
+  font-size: 1.3rem;
+  color: #cfcfcf;
+  margin-bottom: 2rem;
+}
+.cta {
+  margin-top: 1rem;
 }
 .btn {
   display: inline-block;
-  margin: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  margin: 0.5rem 0.5rem 0 0;
+  padding: 0.85rem 2rem;
+  border-radius: 2rem;
+  font-weight: bold;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-primary {
   background: linear-gradient(90deg, #ff8800 30%, #3CDB2E 100%);
   color: #fff;
   border: none;
-  border-radius: 2rem;
-  text-decoration: none;
-  font-weight: bold;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(60,219,46,0.15);
 }
 .btn-outline {
   background: transparent;
   border: 2px solid #3CDB2E;
   color: #3CDB2E;
 }
+.btn-primary:hover, .btn-outline:hover {
+  filter: brightness(1.12);
+}
+
 section {
-  margin: 2rem auto;
-  max-width: 800px;
-  background: rgba(0,0,0,0.5);
+  margin: 2.5rem 0;
+  background: rgba(24, 24, 48, 0.65);
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 2rem 1.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+
+.features .feature-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  justify-content: center;
 }
-th, td {
-  border: 1px solid #fff2;
-  padding: 0.5rem;
-  text-align: left;
+.features .card {
+  background: rgba(40, 40, 60, 0.95);
+  border-radius: 0.8rem;
+  padding: 1.2rem 1.5rem;
+  min-width: 180px;
+  flex: 1 1 220px;
+  box-shadow: 0 2px 8px rgba(60,219,46,0.05);
+  text-align: center;
+  margin-bottom: 1rem;
 }
+.features .card span {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff8800;
+  margin-bottom: 0.5rem;
+}
+.features .card p {
+  margin: 0;
+  color: #cfcfcf;
+  font-size: 0.98rem;
+}
+
+.howto ol {
+  padding-left: 1.5rem;
+  font-size: 1.1rem;
+}
+
 footer {
   text-align: center;
-  padding: 2rem 0;
-  background: rgba(0,0,0,0.8);
-  font-size: 0.9rem;
+  padding: 2rem 0 1rem 0;
+  background: rgba(20, 20, 40, 0.95);
+  font-size: 0.95rem;
+  margin-top: 3rem;
+  border-radius: 1rem 1rem 0 0;
+}
+
+@media (max-width: 700px) {
+  .features .feature-cards {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .hero h1 {
+    font-size: 2.1rem;
+  }
+  main {
+    padding: 1rem 0.5rem;
+  }
 }

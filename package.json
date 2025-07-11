@@ -1,0 +1,36 @@
+{
+  "type": "module",
+  "name": "juju-navi",
+  "version": "1.0.0",
+  "description": "呪術廻戦ファン向けDiscordナビゲーションBot",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@discordjs/builders": "^1.7.0",
+    "@discordjs/rest": "^2.2.0",
+    "discord-api-types": "^0.37.61",
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0",
+    "eslint": "^8.56.0"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "license": "MIT",
+  "keywords": [
+    "discord",
+    "bot",
+    "呪術廻戦",
+    "juju-navi",
+    "ナビゲーション"
+  ],
+  "author": ""
+}

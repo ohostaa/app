@@ -1,6 +1,11 @@
-// src/index.js
-const express = require('express');
-const path = require('path');
+// src/index.mjs
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 app.set('view engine', 'ejs');

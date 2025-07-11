@@ -1,4 +1,3 @@
-// src/index.mjs
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,12 +7,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+// 静的ファイルの配信（/public配下のファイルをそのまま公開）
 app.use(express.static(path.join(__dirname, '../public')));
 
+// ルートアクセス時に index.html を返す
 app.get('/', (req, res) => {
-  res.render('index');
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 const port = process.env.PORT || 3000;

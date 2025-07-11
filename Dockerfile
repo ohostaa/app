@@ -1,17 +1,23 @@
-# Node.jsのバージョン、変える事。
-FROM node:18
+# ベースイメージ（Node.js 18 LTS）
+FROM node:18-slim
 
-# 作業ディレクトリを /app に
+# 作業ディレクトリ作成・移動
 WORKDIR /app
 
-# app フォルダ内の内容をコンテナの /app にコピー
-COPY app/ .
+# 依存ファイルをコピー
+COPY package*.json ./
 
-# 依存関係のインストール
-RUN npm install
+# 依存パッケージをインストール（--productionで本番用のみ）
+RUN npm install --production
 
-# ポートを開ける（Koyeb用）、使用してるポート番号にすること。
+# アプリ本体をコピー
+COPY . .
+
+# 必要ならポート番号をEXPOSE（Webサーバー用途の場合のみ）
 EXPOSE 3000
 
-# アプリの起動、コマンドを指定しよう。index.jsなら"node", "index.js"
-CMD ["node", "main.mjs"]
+# 環境変数のロード（dotenv利用時はKoyeb等のPaaSで設定推奨）
+# ENV NODE_ENV=production
+
+# 起動コマンド
+CMD ["node", "src/index.js"]

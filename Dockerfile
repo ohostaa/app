@@ -1,23 +1,28 @@
-# ベースイメージ（Node.js 18 LTS）
-FROM node:18-slim
+# ベースイメージ
+FROM openjdk:17-jdk-slim
 
-# 作業ディレクトリ作成・移動
+# 作業ディレクトリ作成
 WORKDIR /app
 
-# 依存ファイルをコピー
-COPY package*.json ./
+# Minecraftサーバーのダウンロード
+RUN apt-get update && apt-get install -y wget \
+  && wget -O server.jar https://launcher.mojang.com/v1/objects/fe3aa5a9c3f1b6e5b7b2b5a8c5c6b7b5d9b6e5b7/server.jar
 
-# 依存パッケージをインストール（--productionで本番用のみ）
-RUN npm install --production
+# EULA同意
+RUN echo "eula=true" > eula.txt
 
-# アプリ本体をコピー
-COPY . .
+# Node.jsインストール
+RUN apt-get install -y nodejs npm
 
-# 必要ならポート番号をEXPOSE（Webサーバー用途の場合のみ）
-EXPOSE 3000
+# ソースコード追加
+COPY package.json .
+COPY main.mjs .
 
-# 環境変数のロード（dotenv利用時はKoyeb等のPaaSで設定推奨）
-# ENV NODE_ENV=production
+# npm install（必要なら）
+RUN npm install
 
-# 起動コマンド
-CMD ["node", "src/index.js"]
+# ポート開放
+EXPOSE 25565
+
+# サーバー起動
+CMD ["node", "main.mjs"]

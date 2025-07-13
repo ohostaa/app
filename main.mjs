@@ -1,8 +1,8 @@
 import { spawn } from 'child_process';
 
 const server = spawn('java', [
-  '-Xmx1024M',
-  '-Xms1024M',
+  '-Xmx600',
+  '-Xms600M',
   '-jar',
   'server.jar',
   'nogui'

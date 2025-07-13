@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 
 const server = spawn('java', [
-  '-Xmx600',
+  '-Xmx600M',
   '-Xms600M',
   '-jar',
   'server.jar',
